@@ -1,0 +1,36 @@
+on:
+  # Trigger the workflow on push or pull request,
+  # but only for the master branch
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+name: Deploy to AWS
+
+jobs:
+  deploy:
+    name: Github Actions Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Configure AWS credentials
+      id: creds
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-1
+
+    - name: Deploy S3 Bucket
+      id: s3-bucket
+      uses: aws-actions/aws-cloudformation-github-deploy@master
+      with:
+        name: s3-bucket-stack
+        template: iac/template.yml
+        no-fail-on-empty-changeset: "1"
